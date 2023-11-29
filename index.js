@@ -21,6 +21,40 @@ async function run() {
             await client.db("admin").command({ ping: 1 });
             res.send("Pinged your deployment. You successfully connected to MongoDB!");
         })
+        app.get('/allusers',async(req,res)=>{
+        })
+        app.get('/allpets',async(req,res)=>{
+        })
+        app.get('/alldonations',async(req,res)=>{
+        })
+        app.get('/myaddedpets',async(req,res)=>{
+        })
+        app.get('/mydonations',async(req,res)=>{
+        })
+        app.get('/adoptionrequests',async(req,res)=>{
+        })
+        app.get('/addapet',async(req,res)=>{
+        })
+        app.get('/addadonation',async(req,res)=>{
+        })
+        app.get('/updatepet',async(req,res)=>{
+        })
+        app.get('/updatedonation',async(req,res)=>{
+        })
+        app.get('/deletedonation',async(req,res)=>{
+        })
+        app.get('/deletepet',async(req,res)=>{
+        })
+        app.get('/deleteuser',async(req,res)=>{
+        })
+        app.get('/makeadmin',async(req,res)=>{
+        })
+        app.get('/petdetails/:id',async(req,res)=>{
+        })
+        app.get('/donationdetails/:id',async(req,res)=>{
+        })
+        app.get('/userdetails/:id',async(req,res)=>{
+        })
     } finally {
     }
 }
