@@ -91,8 +91,6 @@ async function run() {
             let result = await cursor.toArray();
             res.send(result)
         })
-        app.get('/alldonations',async(req,res)=>{
-        })
         app.get('/myaddedpets',verifyToken,async(req,res)=>{
             const filter = {submitBy: req.user.email}
             const cursor = pets.find(filter);
@@ -106,15 +104,28 @@ async function run() {
         app.post('/addapet',verifyToken, async(req,res)=>{
             let pet = req.body
             const today = new Date();
-            const date = today.toLocaleDateString('en-GB');
+            const date = today.toLocaleDateString('en-GB').split('/').join('-');
             pet.submitBy = req.user.email
             pet.submitDate = date
             let result = await pets.insertOne(pet);
             res.send(result)
         })
-        app.get('/addadonation',async(req,res)=>{
+        app.post('/addacampaign',verifyToken,async(req,res)=>{
+            let campaign = req.body
+            const today = new Date();
+            const date = today.toLocaleDateString('en-GB').split('/').join('-');
+            campaign.submitBy = req.user.email
+            campaign.submitDate = date
+            campaign.amount = "0"
+            let result = await campaigns.insertOne(campaign);
+            res.send(result)
         })
-        app.get('/updatepet',async(req,res)=>{
+        app.post('/updatepet/:id',verifyToken,async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+            let pet = req.body
+			const updated = {$set:pet}
+            let result = await pets.updateOne(filter,updated,{upsert:true});
+            res.send(result)
         })
         app.get('/updatedonation',async(req,res)=>{
         })
