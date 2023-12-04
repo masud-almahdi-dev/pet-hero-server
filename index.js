@@ -5,7 +5,7 @@ const cors = require('cors')
 const app = express()
 require('dotenv').config()
 const port = process.env.PORT || 5000
-const whitelist = ['https://pet-hero-2023.web.app','https://pet-hero-2023.firebaseapp.com'];
+const whitelist = ['https://pet-hero-2023.web.app','https://pet-hero-2023.firebaseapp.com','http://localhost:5173'];
 const corsOptions = { origin: whitelist,credentials: true }
 
 app.use(cors(corsOptions));
@@ -35,6 +35,10 @@ const verifyToken = async (req, res, next) => {
         next()
     })
 }
+function isEmpty(obj) {
+    return Object.keys(obj).length === 0 && obj.constructor === Object;
+}
+  
 async function run() {
     try {
         app.get('/', async (req, res) => {
@@ -44,10 +48,25 @@ async function run() {
         const users = client.db('PetHeroDB').collection('users');
         const pets = client.db('PetHeroDB').collection('pets');
         const campaigns = client.db('PetHeroDB').collection('campaigns');
-		
+        const categories = client.db('PetHeroDB').collection('categories');
+		app.get('/categories',async(req,res)=>{
+            const cursor = categories.find();
+            let result = await cursor.toArray();
+            res.send(result)
+        })
         app.get('/allusers',async(req,res)=>{
         })
-        app.get('/allpets',async(req,res)=>{
+        app.get('/pets',async(req,res)=>{
+            if(isEmpty(req.query)){
+                const cursor = pets.find();
+                let result = await cursor.toArray();
+                res.send(result)
+            }else{
+                const filter = {category: req.query.category}
+                const cursor = pets.find(filter);
+                let result = await cursor.toArray();
+                res.send(result)
+            }
         })
         app.get('/alldonations',async(req,res)=>{
         })
