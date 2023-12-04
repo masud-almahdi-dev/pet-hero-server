@@ -7,7 +7,7 @@ require('dotenv').config()
 const port = process.env.PORT || 5000
 const whitelist = ['https://pet-hero-2023.web.app','https://pet-hero-2023.firebaseapp.com','http://localhost:5173'];
 const corsOptions = { origin: whitelist,credentials: true }
-
+  
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
@@ -68,15 +68,49 @@ async function run() {
                 res.send(result)
             }
         })
+        app.get('/pet/:id',async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+			let result = await pets.findOne(filter);
+			if(result === null){
+			  res.send({code: 50, error: "No pet with this ID"})
+			}else{
+			  res.send(result)
+			}
+        })
+        app.get('/campaign/:id',async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+			let result = await campaigns.findOne(filter);
+			if(result === null){
+			  res.send({code: 50, error: "No donation campaign with this ID"})
+			}else{
+			  res.send(result)
+			}
+        })
+        app.get('/donations',async(req,res)=>{
+            const cursor = campaigns.find();
+            let result = await cursor.toArray();
+            res.send(result)
+        })
         app.get('/alldonations',async(req,res)=>{
         })
-        app.get('/myaddedpets',async(req,res)=>{
+        app.get('/myaddedpets',verifyToken,async(req,res)=>{
+            const filter = {submitBy: req.user.email}
+            const cursor = pets.find(filter);
+            let result = await cursor.toArray();
+            res.send(result)
         })
         app.get('/mydonations',async(req,res)=>{
         })
         app.get('/adoptionrequests',async(req,res)=>{
         })
-        app.get('/addapet',async(req,res)=>{
+        app.post('/addapet',verifyToken, async(req,res)=>{
+            let pet = req.body
+            const today = new Date();
+            const date = today.toLocaleDateString('en-GB');
+            pet.submitBy = req.user.email
+            pet.submitDate = date
+            let result = await pets.insertOne(pet);
+            res.send(result)
         })
         app.get('/addadonation',async(req,res)=>{
         })
