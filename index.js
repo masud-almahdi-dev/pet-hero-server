@@ -106,6 +106,8 @@ async function run() {
             let result = await cursor.toArray();
             res.send(result)
         })
+        app.get('/mydonations',verifyToken,async(req,res)=>{
+        })
         app.get('/adoptionrequests',async(req,res)=>{
         })
         app.post('/addapet',verifyToken, async(req,res)=>{
@@ -141,11 +143,26 @@ async function run() {
             let result = await campaigns.updateOne(filter,updated,{upsert:true});
             res.send(result)
         })
-        app.get('/deletedonation',async(req,res)=>{
+        app.post('/donate/:id',verifyToken, async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+			let prev = await campaigns.findOne(filter);
+            let preamount = parseInt(prev.amount)
+            let postamount = parseInt(req.body.amount) + preamount
+
+			const updated = {$set:{amount: String(postamount)},$push:{donations:{email:req.user.email,amount:req.body.amount}}}
+            let result = await campaigns.updateOne(filter,updated,{upsert:true});
+            res.send(result)
         })
-        app.get('/deletepet',async(req,res)=>{
+
+        app.get('/deletedonation/:id',async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+            let result = await campaigns.deleteOne(filter)
+            res.send(result)
         })
-        app.get('/deleteuser',async(req,res)=>{
+        app.get('/deletepet/:id',async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+            let result = await pets.deleteOne(filter)
+            res.send(result)
         })
         app.get('/makeadmin/:id',verifyToken,async(req,res)=>{
             const filter = {_id: new ObjectId(req.params.id)}
@@ -182,12 +199,6 @@ async function run() {
 
             }
 
-        })
-        app.get('/petdetails/:id',async(req,res)=>{
-        })
-        app.get('/donationdetails/:id',async(req,res)=>{
-        })
-        app.get('/userdetails/:id',async(req,res)=>{
         })
 		app.post('/jwt', async (req, res) => {
 			const user = {email: req.body.email}
