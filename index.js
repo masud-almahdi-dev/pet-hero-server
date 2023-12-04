@@ -54,7 +54,10 @@ async function run() {
             let result = await cursor.toArray();
             res.send(result)
         })
-        app.get('/allusers',async(req,res)=>{
+        app.get('/users',async(req,res)=>{
+            const cursor = users.find();
+            let result = await cursor.toArray();
+            res.send(result)
         })
         app.get('/pets',async(req,res)=>{
             if(isEmpty(req.query)){
@@ -97,7 +100,11 @@ async function run() {
             let result = await cursor.toArray();
             res.send(result)
         })
-        app.get('/mydonations',async(req,res)=>{
+        app.get('/mycampaigns',verifyToken,async(req,res)=>{
+            const filter = {submitBy: req.user.email}
+            const cursor = campaigns.find(filter);
+            let result = await cursor.toArray();
+            res.send(result)
         })
         app.get('/adoptionrequests',async(req,res)=>{
         })
@@ -127,7 +134,12 @@ async function run() {
             let result = await pets.updateOne(filter,updated,{upsert:true});
             res.send(result)
         })
-        app.get('/updatedonation',async(req,res)=>{
+        app.post('/updatedonation/:id',async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+            let donation = req.body
+			const updated = {$set:donation}
+            let result = await campaigns.updateOne(filter,updated,{upsert:true});
+            res.send(result)
         })
         app.get('/deletedonation',async(req,res)=>{
         })
@@ -135,7 +147,41 @@ async function run() {
         })
         app.get('/deleteuser',async(req,res)=>{
         })
-        app.get('/makeadmin',async(req,res)=>{
+        app.get('/makeadmin/:id',verifyToken,async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+			let result = await users.findOne(filter);
+			let selfres = await users.findOne({email:req.user.email});
+            if(result?.role === "owner"){
+                res.send({code:50,message:"You can't change owners permissions"})
+            }else if(req.user.email === result?.email){
+                res.send({code:50,message:"You can't change your own permissions"})
+            }else if(selfres?.role === "owner" || selfres?.role === "admin"){
+                const updated = {$set:{role:"admin"}}
+                let result2 = await users.updateOne(filter,updated,{upsert:true});
+                res.send(result2)
+            }else{
+                res.send({code:50,message:"Not permitted"})
+
+            }
+
+        })
+        app.get('/removeadmin/:id',verifyToken,async(req,res)=>{
+            const filter = {_id: new ObjectId(req.params.id)}
+			let result = await users.findOne(filter);
+			let selfres = await users.findOne({email:req.user.email});
+            if(result?.role === "owner"){
+                res.send({code:50,message:"You can't change owners permissions"})
+            }else if(req.user.email === result?.email){
+                res.send({code:50,message:"You can't change your own permissions"})
+            }else if(selfres?.role === "owner" || selfres?.role === "admin"){
+                const updated = {$unset:{role:""}}
+                let result2 = await users.updateOne(filter,updated,{upsert:true});
+                res.send(result2)
+            }else{
+                res.send({code:50,message:"Not permitted"})
+
+            }
+
         })
         app.get('/petdetails/:id',async(req,res)=>{
         })
